@@ -1,0 +1,26 @@
+module.exports.formulario_inclusao_noticia = function (application, req, res) {
+    res.render('admin/form_add_noticia', { validacao: [] });
+}
+
+module.exports.salvar_noticia = function (application, req, res) {
+    var noticia = req.body;
+
+    req.assert('titulo', 'Título é obrigatório').notEmpty();
+    req.assert('resumo', 'Resumo é obrigatório').notEmpty();
+    req.assert('resumo', 'Resumo deve ter entre 10 e 100 caracteres').len(10, 100);
+    req.assert('autor', 'Autor é obrigatório').notEmpty();
+    req.assert('data_noticia', 'Data é obrigatório').notEmpty(); //.isDate({format: 'YYYY-MM-DD'})
+    req.assert('noticia', 'Notícia é obrigatória').notEmpty();
+
+    var erros = req.validationErrors();
+
+    if (erros) {
+        res.render('admin/form_add_noticia', { validacao: erros, noticia: noticia });
+        return;
+    }
+
+    var noticiasModel = new application.app.models.NoticiasDAO(application.config.database());
+    noticiasModel.salvarNoticia(noticia, function (error, result) {
+        res.redirect('/noticias');
+    });
+}
